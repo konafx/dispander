@@ -79,8 +79,8 @@ async def _delete_dispand(bot: discord.Client, message: discord.Message, operato
             await extra_message.delete()
 
 
-async def dispand(message):
-    messages = await extract_message(message)
+async def dispand(message: discord.Message, prevent_nsfw: bool = False):
+    messages = await extract_message(message, prevent_nsfw)
     for m in messages:
         sent_messages = []
 
@@ -112,7 +112,7 @@ async def dispand(message):
         await main_message.edit(embed=main_embed)
 
 
-async def extract_message(message):
+async def extract_message(message: discord.Message, prevent_nsfw: bool):
     messages = []
     for ids in re.finditer(regex_discord_message_url, message.content):
         if message.guild.id != int(ids['guild']):
@@ -122,6 +122,8 @@ async def extract_message(message):
             channel_id=int(ids['channel']),
             message_id=int(ids['message']),
         )
+        if prevent_nsfw and fetched_message.channel.is_nsfw():
+            continue
         messages.append(fetched_message)
     return messages
 
